@@ -292,6 +292,15 @@ public class AITemplate : MonoBehaviour
             }
         }
     }
+    void KeepValue(int val)
+    {
+        for (int i = 0; i < diceValues.Length; i++)
+        {
+            if (diceValues[i] == val)
+                gameManager.KeepDie(i);
+        }
+    }
+
     void KeepStraight(List<int> run)
     {
         bool[] keptFace = new bool[6];
@@ -307,13 +316,37 @@ public class AITemplate : MonoBehaviour
         }
     }
 
+    //void SelectBestCombo()
+    //{
+    //    int[] comboPriority = {
+    //        (int)GameManager.DiceCombos.LargeStraight,
+    //        (int)GameManager.DiceCombos.SmallStraight,
+    //        (int)GameManager.DiceCombos.FullHouse,
+    //        (int)GameManager.DiceCombos.FourKind,
+    //        (int)GameManager.DiceCombos.ThreeKind,
+    //        (int)GameManager.DiceCombos.TwoPair
+    //    };
+
+    //    foreach (int combo in comboPriority)
+    //        for (int i = 0; i < diceValues.Length; i++)
+    //        {
+    //            if (!gameManager.IsComboSelected(combo))
+    //            {
+    //                gameManager.SelectCombo(combo);
+    //                return;
+    //            }
+    //            if (diceValues[i] == val)
+    //                gameManager.KeepDie(i);
+    //        }
+    //}
+
     void SelectBestCombo() //new code for John
-    { 
+    {
         if (largeStraight != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.LargeStraight))
         {
             gameManager.SelectCombo((int)GameManager.DiceCombos.LargeStraight);
         }
-        
+
         else if (smallStraight != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.SmallStraight))
         {
             gameManager.SelectCombo((int)GameManager.DiceCombos.SmallStraight);
@@ -333,14 +366,6 @@ public class AITemplate : MonoBehaviour
         else if (twoPair != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.TwoPair))
         {
             gameManager.SelectCombo((int)GameManager.DiceCombos.TwoPair);
-        }
-    }
-    void KeepValue(int val)
-    {
-        for (int i = 0; i < diceValues.Length; i++)
-        {
-            if (diceValues[i] == val)
-                gameManager.KeepDie(i);
         }
     }
 }
