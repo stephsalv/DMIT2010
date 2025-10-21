@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using TMPro;
 using UnityEngine;
@@ -101,10 +103,9 @@ public class AITemplate : MonoBehaviour
         numInStraight = 0;
         currentRun = 0;
 
-        // Get dice values
         gameManager.GetDiceValues(ref diceValues);
 
-        // Reset and count dice
+        //Reset
         Array.Clear(diceCount, 0, diceCount.Length);
         foreach (int value in diceValues)
         {
@@ -140,7 +141,6 @@ public class AITemplate : MonoBehaviour
             }
         }
 
-        //Activate combos based on findings
         if (pairCount >= 2)
             gameManager.SetComboActive((int)GameManager.DiceCombos.TwoPair, true);
 
@@ -156,7 +156,6 @@ public class AITemplate : MonoBehaviour
             gameManager.SetComboActive((int)GameManager.DiceCombos.FullHouse, true);
         }
 
-        //Look for straights
         currentRun = 0;
         for (int i = 0; i < diceCount.Length; i++)
         {
@@ -178,102 +177,170 @@ public class AITemplate : MonoBehaviour
 
     void KeepBestDice()
     {
+        bool smallStraightSelected = gameManager.IsComboSelected((int)GameManager.DiceCombos.SmallStraight);
+        bool largeStraightSelected = gameManager.IsComboSelected((int)GameManager.DiceCombos.LargeStraight);
+        bool twoPairSelected = gameManager.IsComboSelected((int)GameManager.DiceCombos.TwoPair);
+        bool threeKindSelected = gameManager.IsComboSelected((int)GameManager.DiceCombos.ThreeKind);
+        bool fourKindSelected = gameManager.IsComboSelected((int)GameManager.DiceCombos.FourKind);
+        bool fullHouseSelected = gameManager.IsComboSelected((int)GameManager.DiceCombos.FullHouse);
 
-        // Priority: 4/3 of a kind > potential full house > straight potential > pair
-        for (int i = 5; i >= 0; i--)
+        bool twoPairAvailable = (twoPair != -1);
+        bool threeKindAvailable = (threeKind != -1);
+        bool fourKindAvailable = (fourKind != -1);
+        bool fullHouseAvailable = (fullHouse != -1);
+        bool smallStraightAvailable = (smallStraight != -1);
+        bool largeStraightAvailable = (largeStraight != -1);
+
+        bool skipStraights = smallStraightSelected && largeStraightSelected;
+
+        int[] sortedDistinct = diceValues.Distinct().OrderBy(x => x).ToArray();
+
+        if (!skipStraights)
         {
-            if (diceCount[i] >= 3)
+            List<int> currentRun = new List<int>();
+            List<int> longestRun = new List<int>();
+
+            for (int i = 0; i < sortedDistinct.Length; i++)
             {
-                KeepDiceWithValue(i + 1);
+                if (currentRun.Count == 0 || sortedDistinct[i] == currentRun.Last() + 1)
+                {
+                    currentRun.Add(sortedDistinct[i]);
+                }
+                else
+                {
+                    currentRun.Clear();
+                    currentRun.Add(sortedDistinct[i]);
+                }
+
+                if (currentRun.Count > longestRun.Count)
+                    longestRun = new List<int>(currentRun);
+            }
+            if (longestRun.Count >= 5 && largeStraightAvailable && !largeStraightSelected)
+            {
+                KeepStraight(longestRun.Take(5).ToList());
+                return;
+            }
+            if (longestRun.Count >= 4 && smallStraightAvailable && !smallStraightSelected)
+            {
+                KeepStraight(longestRun.Take(4).ToList());
+                return;
+            }
+            if (longestRun.Count >= 3 && (!smallStraightSelected || !largeStraightSelected))
+            {
+                KeepStraight(longestRun.Take(3).ToList());
                 return;
             }
         }
 
-        if (HasStraightPotential())
-        {
-            KeepStraightDice();
-            return;
-        }
+        var groups = diceValues.GroupBy(x => x)
+                       .OrderByDescending(g => g.Count())
+                       .ThenByDescending(g => g.Key)
+                       .ToList();
 
-        for (int i = 5; i >= 0; i--)
+        if (groups.Count == 0) return;
+
+        bool skipPairs = fullHouseSelected && fourKindSelected && threeKindSelected && twoPairSelected;
+
+        if (!skipPairs)
         {
-            if (diceCount[i] == 2)
+            foreach (var group in groups)
             {
-                KeepDiceWithValue(i + 1);
-                return;
+                int value = group.Key;
+                int count = group.Count();
+
+                // Four of a kind
+                if (count == 4 && !fourKindSelected)
+                {
+                    KeepValue(value);
+                    return;
+                }
+
+                // Full house
+                if (count == 3 && groups.Count >= 2 && groups[1].Count() == 2 && !fullHouseSelected)
+                {
+                    KeepValue(value);
+                    return;
+                }
+
+                // Three of a kind
+                if (count == 3 && !threeKindSelected)
+                {
+                    if (!threeKindSelected || !fourKindSelected || !fullHouseSelected)
+                    {
+                        KeepValue(value);
+                        return;
+                    }
+                }
+
+                // Two pair
+                if (count == 2 && groups.Count >= 2 && !twoPairSelected)
+                {
+                    KeepValue(value);
+                    return;
+                }
+
+                // Single pair
+                if (count == 2)
+                {
+                    // Keep if can have higher combo
+                    if (!fullHouseSelected || !fourKindSelected || !threeKindSelected || !twoPairSelected)
+                    {
+                        KeepValue(value);
+                        return;
+                    }
+                }
             }
         }
-
-        //Keep highest single die
-        int maxValue = 0;
-        for (int i = 5; i >= 0; i--)
-        {
-            if (diceCount[i] > 0)
-            {
-                maxValue = i + 1;
-                break;
-            }
-        }
-        KeepDiceWithValue(maxValue);
     }
-    void KeepDiceWithValue(int value)
+    void KeepStraight(List<int> run)
+    {
+        bool[] keptFace = new bool[6];
+
+        for (int i = 0; i < diceValues.Length; i++)
+        {
+            int face = diceValues[i];
+            if (run.Contains(face) && !keptFace[face])
+            {
+                gameManager.KeepDie(i);
+                keptFace[face] = true;
+            }
+        }
+    }
+
+    void SelectBestCombo() //new code for John
+    { 
+        if (largeStraight != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.LargeStraight))
+        {
+            gameManager.SelectCombo((int)GameManager.DiceCombos.LargeStraight);
+        }
+        
+        else if (smallStraight != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.SmallStraight))
+        {
+            gameManager.SelectCombo((int)GameManager.DiceCombos.SmallStraight);
+        }
+        else if (fullHouse != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.FullHouse))
+        {
+            gameManager.SelectCombo((int)GameManager.DiceCombos.FullHouse);
+        }
+        else if (fourKind != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.FourKind))
+        {
+            gameManager.SelectCombo((int)GameManager.DiceCombos.FourKind);
+        }
+        else if (threeKind != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.ThreeKind))
+        {
+            gameManager.SelectCombo((int)GameManager.DiceCombos.ThreeKind);
+        }
+        else if (twoPair != -1 && !gameManager.IsComboSelected((int)GameManager.DiceCombos.TwoPair))
+        {
+            gameManager.SelectCombo((int)GameManager.DiceCombos.TwoPair);
+        }
+    }
+    void KeepValue(int val)
     {
         for (int i = 0; i < diceValues.Length; i++)
         {
-            if (diceValues[i] == value)
-            {
+            if (diceValues[i] == val)
                 gameManager.KeepDie(i);
-            }
-        }
-    }
-
-    bool HasStraightPotential()
-    {
-        int run = 0;
-        for (int i = 0; i < diceCount.Length; i++)
-        {
-            run = (diceCount[i] > 0) ? run + 1 : 0;
-            if (run >= 3) return true;
-        }
-        return false;
-    }
-
-    void KeepStraightDice()
-    {
-        for (int i = 0; i < diceValues.Length; i++)
-        {
-            if (IsPartOfStraight(diceValues[i]))
-                gameManager.KeepDie(i);
-        }
-    }
-
-    bool IsPartOfStraight(int value)
-    {
-        int index = value - 1;
-        {
-            return (index >= 0 && index < diceCount.Length && diceCount[index] > 0);
-        }
-    }
-
-
-    void SelectBestCombo()
-    {
-        int[] comboPriority = {
-            (int)GameManager.DiceCombos.LargeStraight,
-            (int)GameManager.DiceCombos.SmallStraight,
-            (int)GameManager.DiceCombos.FullHouse,
-            (int)GameManager.DiceCombos.FourKind,
-            (int)GameManager.DiceCombos.ThreeKind,
-            (int)GameManager.DiceCombos.TwoPair
-        };
-
-        foreach (int combo in comboPriority)
-        {
-            if (!gameManager.IsComboSelected(combo))
-            {
-                gameManager.SelectCombo(combo);
-                return;
-            }
         }
     }
 }
