@@ -109,7 +109,9 @@ public class AITemplate : MonoBehaviour
         foreach (int value in diceValues)
         {
             if (value >= 0 && value < diceCount.Length)
+            {
                 diceCount[value]++;
+            }
         }
 
         // Track pairs and multiples
@@ -138,7 +140,7 @@ public class AITemplate : MonoBehaviour
             }
         }
 
-        // Activate combos based on findings
+        //Activate combos based on findings
         if (pairCount >= 2)
             gameManager.SetComboActive((int)GameManager.DiceCombos.TwoPair, true);
 
@@ -202,7 +204,7 @@ public class AITemplate : MonoBehaviour
             }
         }
 
-        // Default: keep highest single die
+        //Keep highest single die
         int maxValue = 0;
         for (int i = 5; i >= 0; i--)
         {
@@ -219,7 +221,9 @@ public class AITemplate : MonoBehaviour
         for (int i = 0; i < diceValues.Length; i++)
         {
             if (diceValues[i] == value)
+            {
                 gameManager.KeepDie(i);
+            }
         }
     }
 
@@ -246,19 +250,19 @@ public class AITemplate : MonoBehaviour
     bool IsPartOfStraight(int value)
     {
         int index = value - 1;
-        return (index >= 0 && index < diceCount.Length && diceCount[index] > 0);
+        {
+            return (index >= 0 && index < diceCount.Length && diceCount[index] > 0);
+        }
     }
 
 
-
-
     void SelectBestCombo()
-   {
+    {
         int[] comboPriority = {
             (int)GameManager.DiceCombos.LargeStraight,
+            (int)GameManager.DiceCombos.SmallStraight,
             (int)GameManager.DiceCombos.FullHouse,
             (int)GameManager.DiceCombos.FourKind,
-            (int)GameManager.DiceCombos.SmallStraight,
             (int)GameManager.DiceCombos.ThreeKind,
             (int)GameManager.DiceCombos.TwoPair
         };
@@ -268,16 +272,6 @@ public class AITemplate : MonoBehaviour
             if (!gameManager.IsComboSelected(combo))
             {
                 gameManager.SelectCombo(combo);
-                return;
-            }
-        }
-
-        // Fallback: pick any unused combo
-        for (int i = 0; i < Enum.GetValues(typeof(GameManager.DiceCombos)).Length; i++)
-        {
-            if (!gameManager.IsComboSelected(i))
-            {
-                gameManager.SelectCombo(i);
                 return;
             }
         }
