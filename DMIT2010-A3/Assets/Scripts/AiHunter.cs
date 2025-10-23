@@ -1,13 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class AdvancedMover : MonoBehaviour
+public class AIHunter : MonoBehaviour
 {
     [SerializeField] float movementSpeed;
     RaycastHit hitFront, hitLeft, hitRight;
     [SerializeField] float forwardDist, sideDist, downDist;
     bool leftWall, rightWall;
-
+    
     int randInt;
 
     [SerializeField] GameObject downCheck, jumpCheck;
@@ -161,6 +161,11 @@ public class AdvancedMover : MonoBehaviour
             movementSpeed += boostPower;
             boostTimer = boostDuration;
             isBoosted = true;
+            Destroy(other.gameObject);
+        }
+        if (other.CompareTag("Runner"))
+        {
+            Destroy(other.gameObject);
         }
     }
 
