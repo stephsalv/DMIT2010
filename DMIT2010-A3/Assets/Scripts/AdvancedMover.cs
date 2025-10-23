@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class AdvancedMover : MonoBehaviour
 {
@@ -18,8 +19,8 @@ public class AdvancedMover : MonoBehaviour
 
     List<GameObject> targets = new List<GameObject>();
 
-    [SerializeField] float boostPower = 2f;
-    [SerializeField] float boostDuration = 1f;
+    [SerializeField] float boostPower = 0.2f;
+    [SerializeField] float boostDuration = 0.1f;
 
     float boostTimer = 0f;
     bool isBoosted = false;
@@ -155,9 +156,12 @@ public class AdvancedMover : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Pickup"))
+        if (other.CompareTag("Speed") || other.CompareTag("Disguise"))
         {
             targets.Add(other.transform.parent.gameObject);
+        }
+        if (other.CompareTag("Speed"))
+        {
             movementSpeed += boostPower;
             boostTimer = boostDuration;
             isBoosted = true;
@@ -166,7 +170,7 @@ public class AdvancedMover : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Pickup"))
+        if (other.CompareTag("Speed") || other.CompareTag("Disguise"))
         {
             targets.Remove(other.transform.parent.gameObject);
         }

@@ -4,10 +4,11 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - Pickup
   - Wall
   - Runner
   - Hunter
+  - Speed
+  - Disguise
   layers:
   - Default
   - TransparentFX

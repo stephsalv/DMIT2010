@@ -18,8 +18,8 @@ public class AIHunter : MonoBehaviour
 
     List<GameObject> targets = new List<GameObject>();
 
-    [SerializeField] float boostPower = 2f;
-    [SerializeField] float boostDuration = 1f;
+    [SerializeField] float boostPower = 0.1f;
+    [SerializeField] float boostDuration = 0.1f;
 
     float boostTimer = 0f;
     bool isBoosted = false;
@@ -155,23 +155,21 @@ public class AIHunter : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Pickup"))
+        if (other.CompareTag("Speed"))
         {
             targets.Add(other.transform.parent.gameObject);
-            movementSpeed += boostPower;
-            boostTimer = boostDuration;
-            isBoosted = true;
-            Destroy(other.gameObject);
         }
-        if (other.CompareTag("Runner"))
-        {
-            Destroy(other.gameObject);
-        }
+        // if (other.CompareTag("Speed"))
+        // {
+        //     movementSpeed += boostPower;
+        //     boostTimer = boostDuration;
+        //     isBoosted = true;
+        // }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Pickup"))
+        if (other.CompareTag("Speed"))
         {
             targets.Remove(other.transform.parent.gameObject);
         }
