@@ -1,8 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 
-public class AdvancedMover : MonoBehaviour
+public class AIRunner : MonoBehaviour
 {
     [SerializeField] float movementSpeed;
     RaycastHit hitFront, hitLeft, hitRight;
@@ -20,10 +19,20 @@ public class AdvancedMover : MonoBehaviour
     List<GameObject> targets = new List<GameObject>();
 
     [SerializeField] float boostPower = 0.2f;
-    [SerializeField] float boostDuration = 0.1f;
+    [SerializeField] float boostDuration = 1.0f;
+    [SerializeField] float disguiseDuration = 3.0f;
 
     float boostTimer = 0f;
+    float disguiseTimer = 0f;
     bool isBoosted = false;
+    bool isDisguised = false;
+
+    [SerializeField] Renderer bodyRenderer; // assign in inspector
+    [SerializeField] Color normalColor = Color.yellow;
+    [SerializeField] Color disguiseColor = Color.red;
+
+    [SerializeField] float hunterDetectionRadius = 5f;
+    [SerializeField] LayerMask hunterLayer;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -90,15 +99,38 @@ public class AdvancedMover : MonoBehaviour
                 }
             }
 
-            if (isBoosted)
+            HandleBoostAndDisguiseTimers();
+        }
+    }
+
+    void HandleBoostAndDisguiseTimers()
+    {
+        // Boost logic
+        if (isBoosted)
+        {
+            boostTimer -= Time.deltaTime;
+            if (boostTimer <= 0f)
             {
-                boostTimer -= Time.deltaTime;
-                if (boostTimer <= 0f)
-                {
-                    movementSpeed += boostPower;
-                    isBoosted = false;
-                }
+                isBoosted = false;
             }
+        }
+
+        // Disguise logic
+        if (isDisguised)
+        {
+            disguiseTimer -= Time.deltaTime;
+            if (disguiseTimer <= 0f)
+            {
+                isDisguised = false;
+                if (bodyRenderer != null)
+                    bodyRenderer.material.color = normalColor; // restore original color
+            }
+        }
+
+        // Update color while disguised
+        if (isDisguised && bodyRenderer != null)
+        {
+            bodyRenderer.material.color = disguiseColor;
         }
     }
 
@@ -160,19 +192,46 @@ public class AdvancedMover : MonoBehaviour
         {
             targets.Add(other.transform.parent.gameObject);
         }
+
         if (other.CompareTag("Speed"))
         {
             movementSpeed += boostPower;
             boostTimer = boostDuration;
             isBoosted = true;
+            //other.gameObject.SetActive(false);
+        }
+
+        if (other.CompareTag("Disguise"))
+        {
+            isDisguised = true;
+            disguiseTimer = disguiseDuration;
+            //other.gameObject.SetActive(false);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Speed") || other.CompareTag("Disguise"))
-        {
             targets.Remove(other.transform.parent.gameObject);
+    }
+
+    Vector3 DetectHunters()
+    {
+        Vector3 avoidance = Vector3.zero;
+        Collider[] hunters = Physics.OverlapSphere(transform.position, hunterDetectionRadius, hunterLayer);
+
+        foreach (Collider hunter in hunters)
+        {
+            Vector3 dirToHunter = hunter.transform.position - transform.position;
+
+            // Check line of sight
+            if (!Physics.Raycast(transform.position + Vector3.up * 0.5f, dirToHunter.normalized, dirToHunter.magnitude))
+            {
+                // Add vector away from Hunter
+                avoidance -= dirToHunter.normalized; // negative to move away
+            }
         }
+
+        return avoidance.normalized;
     }
 }

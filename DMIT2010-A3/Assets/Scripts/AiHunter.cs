@@ -155,21 +155,15 @@ public class AIHunter : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Speed"))
+        if (other.CompareTag("Speed") || other.CompareTag("Runner"))
         {
             targets.Add(other.transform.parent.gameObject);
         }
-        // if (other.CompareTag("Speed"))
-        // {
-        //     movementSpeed += boostPower;
-        //     boostTimer = boostDuration;
-        //     isBoosted = true;
-        // }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Speed"))
+        if (other.CompareTag("Speed") || other.CompareTag("Runner"))
         {
             targets.Remove(other.transform.parent.gameObject);
         }
