@@ -111,6 +111,10 @@ MonoBehaviour:
   bodyRenderer: {fileID: 0}
   normalColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   disguiseColor: {r: 1, g: 0, b: 0, a: 1}
+  hunterDetectionRadius: 5
+  hunterLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &9121456320698543308
 GameObject:
   m_ObjectHideFlags: 0
@@ -178,7 +182,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7b12091485275584a8316f74efe15c8a, type: 2}
+  - {fileID: 2100000, guid: ef6c21718e8e8954f9f5da41bc405266, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
