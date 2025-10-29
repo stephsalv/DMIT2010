@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
 public class AIRunner : MonoBehaviour
 {
     [SerializeField] float movementSpeed;
@@ -18,16 +22,9 @@ public class AIRunner : MonoBehaviour
 
     [SerializeField] float boostPower = 0.2f;
     [SerializeField] float boostDuration = 1.0f;
-    [SerializeField] float disguiseDuration = 3.0f;
 
     float boostTimer = 0f;
-    float disguiseTimer = 0f;
     bool isBoosted = false;
-    bool isDisguised = false;
-
-    [SerializeField] Renderer bodyRenderer;
-    [SerializeField] Color normalColor = Color.yellow;
-    [SerializeField] Color disguiseColor = Color.red;
 
     [SerializeField] float hunterDetectionRadius = 5f;
     [SerializeField] LayerMask hunterLayer;
@@ -52,7 +49,7 @@ public class AIRunner : MonoBehaviour
                 transform.forward, out hunterHit, Quaternion.identity, forwardDist, hunterLayer))
             {
                 RotateAwayFromHunter();
-                return; // skip rest of logic this frame
+                return;
             }
 
             if (Physics.BoxCast(transform.position + transform.up, new Vector3(0.5f, 0.9f, 0.5f),
@@ -103,11 +100,11 @@ public class AIRunner : MonoBehaviour
                 }
             }
 
-            HandleBoostAndDisguiseTimers();
+            HandleBoostTimer();
         }
     }
 
-    void HandleBoostAndDisguiseTimers()
+    void HandleBoostTimer()
     {
         if (isBoosted)
         {
@@ -116,22 +113,6 @@ public class AIRunner : MonoBehaviour
             {
                 isBoosted = false;
             }
-        }
-
-        if (isDisguised)
-        {
-            disguiseTimer -= Time.deltaTime;
-            if (disguiseTimer <= 0f)
-            {
-                isDisguised = false;
-                if (bodyRenderer != null)
-                    bodyRenderer.material.color = normalColor;
-            }
-        }
-
-        if (isDisguised && bodyRenderer != null)
-        {
-            bodyRenderer.material.color = disguiseColor;
         }
     }
 
@@ -195,11 +176,11 @@ public class AIRunner : MonoBehaviour
 
         if (leftWall && !rightWall)
         {
-            transform.Rotate(Vector3.up, 90); // Hunter on left → turn right
+            transform.Rotate(Vector3.up, 90);
         }
         else if (!leftWall && rightWall)
         {
-            transform.Rotate(Vector3.up, -90); // Hunter on right → turn left
+            transform.Rotate(Vector3.up, -90);
         }
         else
         {
@@ -214,6 +195,8 @@ public class AIRunner : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!gameObject.activeSelf) return; // prevent multiple disguise triggers
+
         if (other.CompareTag("Speed") || other.CompareTag("Disguise"))
         {
             targets.Add(other.transform.parent.gameObject);
@@ -225,12 +208,6 @@ public class AIRunner : MonoBehaviour
             boostTimer = boostDuration;
             isBoosted = true;
         }
-
-        if (other.CompareTag("Disguise"))
-        {
-            isDisguised = true;
-            disguiseTimer = disguiseDuration;
-        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -238,6 +215,7 @@ public class AIRunner : MonoBehaviour
         if (other.CompareTag("Speed") || other.CompareTag("Disguise"))
         {
             targets.Remove(other.transform.parent.gameObject);
-            }
+        }
     }
 }
+
