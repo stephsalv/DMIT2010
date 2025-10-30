@@ -17,7 +17,6 @@ public class AIRunner : MonoBehaviour
 
     List<GameObject> targets = new List<GameObject>();
 
-    [SerializeField] float hunterDetectionRadius = 5f;
     [SerializeField] LayerMask hunterLayer;
 
     void Start()
@@ -176,6 +175,10 @@ public class AIRunner : MonoBehaviour
         {
             targets.Add(other.transform.parent.gameObject);
         }
+        if (other.CompareTag("Speed"))
+        {
+            StartCoroutine(TemporarySpeedBoost(1f, 2f));
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -184,6 +187,12 @@ public class AIRunner : MonoBehaviour
         {
             targets.Remove(other.transform.parent.gameObject);
         }
+    }
+    private IEnumerator TemporarySpeedBoost(float boostAmount, float duration)
+    {
+        movementSpeed += boostAmount;
+        yield return new WaitForSeconds(duration);
+        movementSpeed -= boostAmount;
     }
 }
 
