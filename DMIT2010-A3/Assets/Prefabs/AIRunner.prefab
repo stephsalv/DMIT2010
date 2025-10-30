@@ -184,7 +184,7 @@ GameObject:
   - component: {fileID: 1275539689703239667}
   - component: {fileID: 9057131004620665557}
   m_Layer: 0
-  m_Name: SpeedRunner
+  m_Name: AIRunner
   m_TagString: Runner
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -227,8 +227,6 @@ MonoBehaviour:
   downDist: 0
   downCheck: {fileID: 819420583752264874}
   jumpCheck: {fileID: 6467370237866333785}
-  boostPower: 0.2
-  boostDuration: 1
   hunterDetectionRadius: 5
   hunterLayer:
     serializedVersion: 2
@@ -284,5 +282,5 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 5
+  m_Radius: 7
   m_Center: {x: 0, y: 0, z: 0}

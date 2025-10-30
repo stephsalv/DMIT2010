@@ -1,7 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
-
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -20,18 +17,12 @@ public class AIRunner : MonoBehaviour
 
     List<GameObject> targets = new List<GameObject>();
 
-    [SerializeField] float boostPower = 0.2f;
-    [SerializeField] float boostDuration = 1.0f;
-
-    float boostTimer = 0f;
-    bool isBoosted = false;
-
     [SerializeField] float hunterDetectionRadius = 5f;
     [SerializeField] LayerMask hunterLayer;
 
     void Start()
     {
-        movementSpeed = Random.Range(3, 8);
+        movementSpeed = 5.0f;  //Random.Range(3, 5);
         forwardDist = 1.0f;
         sideDist = 2.0f;
         downDist = 1.0f;
@@ -98,20 +89,6 @@ public class AIRunner : MonoBehaviour
                 {
                     RotateAway();
                 }
-            }
-
-            HandleBoostTimer();
-        }
-    }
-
-    void HandleBoostTimer()
-    {
-        if (isBoosted)
-        {
-            boostTimer -= Time.deltaTime;
-            if (boostTimer <= 0f)
-            {
-                isBoosted = false;
             }
         }
     }
@@ -195,18 +172,9 @@ public class AIRunner : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!gameObject.activeSelf) return; // prevent multiple disguise triggers
-
         if (other.CompareTag("Speed") || other.CompareTag("Disguise"))
         {
             targets.Add(other.transform.parent.gameObject);
-        }
-
-        if (other.CompareTag("Speed"))
-        {
-            movementSpeed += boostPower;
-            boostTimer = boostDuration;
-            isBoosted = true;
         }
     }
 

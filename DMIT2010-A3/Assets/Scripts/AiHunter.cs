@@ -1,5 +1,6 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class AIHunter : MonoBehaviour
 {
@@ -17,12 +18,6 @@ public class AIHunter : MonoBehaviour
     bool grounded;
 
     List<GameObject> targets = new List<GameObject>();
-
-    [SerializeField] float boostPower = 0.1f;
-    [SerializeField] float boostDuration = 0.1f;
-
-    float boostTimer = 0f;
-    bool isBoosted = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -88,16 +83,6 @@ public class AIHunter : MonoBehaviour
                     RotateAway();
                 }
             }
-
-            if (isBoosted)
-            {
-                boostTimer -= Time.deltaTime;
-                if (boostTimer <= 0f)
-                {
-                    movementSpeed += boostPower;
-                    isBoosted = false;
-                }
-            }
         }
     }
 
@@ -159,6 +144,10 @@ public class AIHunter : MonoBehaviour
         {
             targets.Add(other.transform.parent.gameObject);
         }
+        if (other.CompareTag("Speed"))
+        {
+            StartCoroutine(TemporarySpeedBoost(1f, 2f));
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -167,5 +156,11 @@ public class AIHunter : MonoBehaviour
         {
             targets.Remove(other.transform.parent.gameObject);
         }
+    }
+    private IEnumerator TemporarySpeedBoost(float boostAmount, float duration)
+    {
+        movementSpeed += boostAmount;
+        yield return new WaitForSeconds(duration);
+        movementSpeed -= boostAmount;
     }
 }
