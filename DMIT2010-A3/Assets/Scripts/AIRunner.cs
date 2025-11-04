@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AIRunner : MonoBehaviour
 {
@@ -89,6 +90,17 @@ public class AIRunner : MonoBehaviour
                     RotateAway();
                 }
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit(); // quits the app (works in build, not in Editor)
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Scene currentScene = SceneManager.GetActiveScene();
+            SceneManager.LoadScene(currentScene.name);
         }
     }
 
@@ -198,17 +210,14 @@ public class AIRunner : MonoBehaviour
         yield return new WaitForSeconds(duration);
         movementSpeed -= boostAmount;
     }
-    private IEnumerator TemporaryDisguise(float duration)
+    public IEnumerator TemporaryDisguise(float duration)
     {
-        int originalLayer = gameObject.layer;
         string originalTag = gameObject.tag;
 
-        gameObject.layer = LayerMask.NameToLayer("Hunter");
         gameObject.tag = "Hunter";
 
         yield return new WaitForSeconds(duration);
 
-        gameObject.layer = originalLayer;
         gameObject.tag = originalTag;
     }
 }
