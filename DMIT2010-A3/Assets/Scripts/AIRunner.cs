@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class AIRunner : MonoBehaviour
 {
-    [SerializeField] float movementSpeed;
+    [SerializeField] public float movementSpeed;
     RaycastHit hitFront, hitLeft, hitRight;
     [SerializeField] float forwardDist, sideDist, downDist;
     bool leftWall, rightWall;
@@ -15,14 +15,14 @@ public class AIRunner : MonoBehaviour
     Rigidbody rbody;
     bool grounded;
 
-    List<GameObject> targets = new List<GameObject>();
+    public List<GameObject> targets = new List<GameObject>();
 
     [SerializeField] LayerMask hunterLayer;
 
     void Start()
     {
         movementSpeed = 5.0f;  //Random.Range(3, 5);
-        forwardDist = 1.0f;
+        forwardDist = 1.2f;
         sideDist = 2.0f;
         downDist = 1.0f;
 
@@ -143,13 +143,11 @@ public class AIRunner : MonoBehaviour
         {
             leftWall = true;
         }
-
         if (Physics.BoxCast(transform.position + transform.up, new Vector3(0.5f, 1, 0.5f),
             transform.right, out hitRight, Quaternion.identity, sideDist, hunterLayer))
         {
             rightWall = true;
         }
-
         if (leftWall && !rightWall)
         {
             transform.Rotate(Vector3.up, 90);
@@ -173,19 +171,25 @@ public class AIRunner : MonoBehaviour
     {
         if (other.CompareTag("Speed") || other.CompareTag("Disguise"))
         {
-            targets.Add(other.transform.parent.gameObject);
+            targets.Add(other.transform.gameObject);
         }
         if (other.CompareTag("Speed"))
         {
-            StartCoroutine(TemporarySpeedBoost(1f, 2f));
+            StartCoroutine(TemporarySpeedBoost(0.5f, 0.5f));
         }
+
+        if (other.CompareTag("Disguise"))
+        {
+            StartCoroutine(TemporaryDisguise(0.5f));
+        }
+
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Speed") || other.CompareTag("Disguise"))
         {
-            targets.Remove(other.transform.parent.gameObject);
+            targets.Remove(other.transform.gameObject);
         }
     }
     private IEnumerator TemporarySpeedBoost(float boostAmount, float duration)
@@ -193,6 +197,19 @@ public class AIRunner : MonoBehaviour
         movementSpeed += boostAmount;
         yield return new WaitForSeconds(duration);
         movementSpeed -= boostAmount;
+    }
+    private IEnumerator TemporaryDisguise(float duration)
+    {
+        int originalLayer = gameObject.layer;
+        string originalTag = gameObject.tag;
+
+        gameObject.layer = LayerMask.NameToLayer("Hunter");
+        gameObject.tag = "Hunter";
+
+        yield return new WaitForSeconds(duration);
+
+        gameObject.layer = originalLayer;
+        gameObject.tag = originalTag;
     }
 }
 

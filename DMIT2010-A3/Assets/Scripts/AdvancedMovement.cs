@@ -1,14 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
-public class AIHunter : MonoBehaviour
+public class AdvancedMovement : MonoBehaviour
 {
     [SerializeField] float movementSpeed;
     RaycastHit hitFront, hitLeft, hitRight;
     [SerializeField] float forwardDist, sideDist, downDist;
     bool leftWall, rightWall;
-    
+
     int randInt;
 
     [SerializeField] GameObject downCheck, jumpCheck;
@@ -17,12 +16,17 @@ public class AIHunter : MonoBehaviour
 
     bool grounded;
 
-    public List<GameObject> targets = new List<GameObject>();
+    [SerializeField] List<GameObject> targets = new List<GameObject>();
+    [SerializeField] LayerMask obstacleMask;
+
+    public enum Role { Hunter, Runner }
+
+    public Role role;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        movementSpeed = 3f; // Random.Range(3, 8);
+        movementSpeed = 5f; //Random.Range(3, 8);
         forwardDist = 1.0f;
         sideDist = 2.0f;
         downDist = 1.0f;
@@ -39,8 +43,16 @@ public class AIHunter : MonoBehaviour
             // Rotate the mover if an object is detected in front
             if (Physics.BoxCast(transform.position + transform.up, new Vector3(0.5f, 0.9f, 0.5f), transform.forward, out hitFront, Quaternion.identity, forwardDist))
             {
-                transform.LookAt(transform.position - hitFront.normal);
-                RotateAway();
+                if (role == Role.Hunter && !hitFront.collider.CompareTag("Runner"))
+                {
+                    transform.LookAt(transform.position - hitFront.normal);
+                    RotateAway();
+                }
+                else if (role == Role.Runner && !hitFront.collider.CompareTag("Hunter"))
+                {
+                    transform.LookAt(transform.position - hitFront.normal);
+                    RotateAway();
+                }
             }
             else if (targets.Count > 0)
             {
@@ -95,14 +107,30 @@ public class AIHunter : MonoBehaviour
         leftWall = false;
         rightWall = false;
 
+        if (Physics.BoxCast(transform.position + transform.up, new Vector3(0.5f, 1, 0.5f), -transform.right, out hitLeft, Quaternion.identity, sideDist, obstacleMask))
+        {
+            if ((role == Role.Hunter && !hitLeft.collider.CompareTag("Runner")) ||
+                (role == Role.Runner && !hitLeft.collider.CompareTag("Hunter")))
+                leftWall = true;
+        }
+
+        if (Physics.BoxCast(transform.position + transform.up, new Vector3(0.5f, 1, 0.5f), transform.right, out hitRight, Quaternion.identity, sideDist, obstacleMask))
+        {
+            if ((role == Role.Hunter && !hitRight.collider.CompareTag("Runner")) ||
+                (role == Role.Runner && !hitRight.collider.CompareTag("Hunter")))
+                rightWall = true;
+        }
+
         if (Physics.BoxCast(transform.position + transform.up, new Vector3(0.5f, 1, 0.5f), -transform.right, out hitLeft, Quaternion.identity, sideDist))
         {
             leftWall = true;
         }
+
         if (Physics.BoxCast(transform.position + transform.up, new Vector3(0.5f, 1, 0.5f), transform.right, out hitRight, Quaternion.identity, sideDist))
         {
             rightWall = true;
         }
+
         if (leftWall && !rightWall)
         {
             transform.Rotate(Vector3.up, 90);
@@ -129,7 +157,6 @@ public class AIHunter : MonoBehaviour
         }
     }
 
-
     private void OnCollisionEnter(Collision collision)
     {
         grounded = true;
@@ -137,27 +164,33 @@ public class AIHunter : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Speed") || other.CompareTag("Runner"))
+        if (other.CompareTag("Pickup"))
         {
             targets.Add(other.transform.parent.gameObject);
         }
-        if (other.CompareTag("Speed"))
+        if (other.CompareTag("Runner"))
         {
-            StartCoroutine(TemporarySpeedBoost(1f, 2f));
+            targets.Add(other.transform.parent.gameObject);
+        }
+        if (other.CompareTag("Hunter"))
+        {
+            targets.Add(other.transform.parent.gameObject);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Speed") || other.CompareTag("Runner"))
+        if (other.CompareTag("Pickup"))
         {
             targets.Remove(other.transform.parent.gameObject);
         }
-    }
-    private IEnumerator TemporarySpeedBoost(float boostAmount, float duration)
-    {
-        movementSpeed += boostAmount;
-        yield return new WaitForSeconds(duration);
-        movementSpeed -= boostAmount;
+        if (other.CompareTag("Runner"))
+        {
+            targets.Remove(other.transform.parent.gameObject);
+        }
+        if (other.CompareTag("Hunter"))
+        {
+            targets.Remove(other.transform.parent.gameObject);
+        }
     }
 }
