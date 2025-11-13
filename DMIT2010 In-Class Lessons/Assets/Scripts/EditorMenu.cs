@@ -16,7 +16,7 @@ public class EditorMenu : MonoBehaviour
     static void SpawnFloorNodes()
     {
         // The transform of the floor
-        Transform floor;
+        //Transform floor;
         // The extents of the floor
         Vector3 floorExtents;
         // The count for giving all nodes and unique ID
@@ -29,24 +29,29 @@ public class EditorMenu : MonoBehaviour
         ClearFloorNodes();
 
         // Store the transform of the selected floor
-        floor = Selection.transforms[0];
+        //floor = Selection.transforms[0];
 
-        // Store the extents of the selected floor leaving a small margin around the edges by subtracting a Vector3
-        floorExtents = floor.gameObject.GetComponent<BoxCollider>().bounds.extents - new Vector3(1, 0, 1);
-
-        // Starting at the bottom left corner spawn pathnodes along the entire surface of the selected floor
-        for (float i = floorExtents.x * -2; i <= 0; i+=2)
+        foreach (Transform floor in Selection.transforms)
         {
-            for (float j = floorExtents.z * -2; j <= 0; j += 2)
+            // Store the extents of the selected floor leaving a small margin around the edges by subtracting a Vector3
+            floorExtents = floor.gameObject.GetComponent<BoxCollider>().bounds.extents - new Vector3(1, 0, 1);
+
+            // Starting at the bottom left corner spawn pathnodes along the entire surface of the selected floor
+            for (float i = floorExtents.x * -2; i <= 0; i += 2)
             {
-                GameObject spawnedNode = Instantiate(pathNode, floor.position + floorExtents + new Vector3(i, 0, j), floor.rotation);
-                count++;
-                spawnedNode.name = "Pathnode" + count;
-                spawnedNode.transform.parent = floor;
+                for (float j = floorExtents.z * -2; j <= 0; j += 2)
+                {
+                    GameObject spawnedNode = Instantiate(pathNode, floor.position + floorExtents + new Vector3(i, 0, j), floor.rotation);
+                    count++;
+                    spawnedNode.name = "Pathnode" + count;
+                    spawnedNode.transform.parent = floor;
+                }
             }
         }
 
-        
+
+
+
 
     }
 
@@ -58,41 +63,39 @@ public class EditorMenu : MonoBehaviour
         bool validated = true;
 
         // Allow the user to spawn nodes if only one floor is selected and it is tagged properly
-        if (Selection.transforms.Length == 1)
+
+        foreach (Transform sphere in Selection.transforms)
         {
-            foreach (Transform sphere in Selection.transforms)
+            if (sphere.tag != "Floor")
             {
-                if (sphere.tag != "Floor")
-                {
-                    validated = false;
-                }
+                validated = false;
             }
         }
-        else
-        {
-            validated = false;
-        }
+
         return validated;
     }
 
-    [MenuItem("Grid Generation/Clear Floor Nodes", priority = 0)]
+    [MenuItem("Grid Generation/Clear Floor Nodes", priority = 1)]
 
     static void ClearFloorNodes()
     {
         int breakout = 0;
-
-        // Destroy the child object at the first index until there are no children
-        for (; Selection.gameObjects[0].transform.childCount > 0; breakout++)
+        foreach (Transform floor in Selection.transforms)
         {
-            DestroyImmediate(Selection.gameObjects[0].transform.GetChild(0).gameObject);
-
-            // If the loop does not appear to be ending then break
-            if (breakout > 10000)
+            //Destroy the child object at the first index until there are no children
+            for (; floor.transform.childCount > 0; breakout++)
             {
-                Debug.Log("infinite");
-                break;
+                DestroyImmediate(floor.transform.GetChild(0).gameObject);
+
+                // If the loop does not appear to be ending then break
+                if (breakout > 10000)
+                {
+                    Debug.Log("infinite");
+                    break;
+                }
             }
         }
+        
     }
 
     [MenuItem("Grid Generation/Clear Floor Nodes", true)]
@@ -101,23 +104,18 @@ public class EditorMenu : MonoBehaviour
     {
         bool validated = true;
 
-        if (Selection.transforms.Length == 1)
+
+        foreach (Transform floor in Selection.transforms)
         {
-            foreach (Transform sphere in Selection.transforms)
+            if (floor.tag != "Floor")
             {
-                if (sphere.tag != "Floor")
-                {
-                    validated = false;
-                }
+                validated = false;
             }
         }
-        else
-        {
-            validated = false;
-        }
+
         return validated;
     }
-    
+
     // Create a sub menu item called Spawn Trigger Nodes under the menu item Grid Generation
     [MenuItem("Grid Generation/Spawn Trigger Nodes", priority = 50)]
 
@@ -146,19 +144,22 @@ public class EditorMenu : MonoBehaviour
         triggerExtents = trigger.gameObject.GetComponent<BoxCollider>().bounds.extents - new Vector3(1, 0, 1);
 
         // Starting at the bottom left corner spawn pathnodes along the entire surface of the selected trigger
-        for (float i = triggerExtents.x * -2; i <= 0; i += 2)
+        for (float i = triggerExtents.x * -2; i <= 0; i += 3)
         {
-            for (float j = triggerExtents.z * -2; j <= 0; j += 2)
+            for (float j = triggerExtents.z * -2; j <= 0; j += 3)
             {
                 // Raycast down from the current location
                 if (Physics.Raycast(trigger.position + triggerExtents + new Vector3(i, 0, j), Vector3.down, out hit))
                 {
-                    // If the raycast hits then spawn a node at that location
-                    GameObject spawnedNode = Instantiate(pathNode, hit.point, trigger.rotation);
-                    count++;
-                    spawnedNode.name = "Pathnode" + count;
-                    spawnedNode.transform.parent = trigger;
-                }                
+                    // If the raycast hits the floor object then spawn a node at that location
+                    if (hit.transform.tag == "Floor")
+                    {
+                        GameObject spawnedNode = Instantiate(pathNode, hit.point, trigger.rotation);
+                        count++;
+                        spawnedNode.name = "Pathnode" + count;
+                        spawnedNode.transform.parent = trigger;
+                    } 
+                }
             }
         }
 
@@ -260,7 +261,7 @@ public class EditorMenu : MonoBehaviour
                 // Make sure the target node is not the current node
                 if (node.transform != target.transform)
                 {
-                    if (Vector3.Distance(node.transform.position, target.transform.position) <= 2.1f &&
+                    if (Vector3.Distance(node.transform.position, target.transform.position) <= 3.1f &&
                         !Physics.SphereCast(new Ray(node.transform.position + new Vector3(0, 1, 0), target.transform.position - node.transform.position), 0.4f, Vector3.Distance(node.transform.position, target.transform.position)) &&
                         !Physics.CheckSphere(node.transform.position + new Vector3(0, 1, 0), 0.4f))
                     {
