@@ -5,7 +5,7 @@ public class AdvancedMover : MonoBehaviour
 {
     [SerializeField] float movementSpeed;
     RaycastHit hitFront, hitLeft, hitRight;
-    [SerializeField] float forwardDist, sideDist, downDist;
+    [SerializeField] float forwardDist = 1.0f, sideDist = 2.0f, downDist = 1.0f;
     bool leftWall, rightWall;
 
     int randInt;
@@ -22,9 +22,6 @@ public class AdvancedMover : MonoBehaviour
     void Start()
     {
         movementSpeed = Random.Range(3, 8);
-        forwardDist = 1.0f;
-        sideDist = 2.0f;
-        downDist = 1.0f;
 
         rbody = GetComponent<Rigidbody>();
         grounded = true;

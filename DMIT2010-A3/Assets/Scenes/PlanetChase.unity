@@ -742,8 +742,7 @@ MonoBehaviour:
   downDist: 0
   downCheck: {fileID: 882058564}
   jumpCheck: {fileID: 812764293}
-  boostPower: 2
-  boostDuration: 3
+  targets: []
 --- !u!114 &891000012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1307,6 +1306,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Untagged
       objectReference: {fileID: 0}
+    - target: {fileID: 5294534405873208957, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6260648591802589154, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
       propertyPath: m_Name
       value: AIRunner
@@ -1316,12 +1319,20 @@ PrefabInstance:
       value: Runner
       objectReference: {fileID: 0}
     - target: {fileID: 6895880398064232139, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
+      propertyPath: m_UseGravity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6895880398064232139, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
       propertyPath: m_Constraints
       value: 112
       objectReference: {fileID: 0}
     - target: {fileID: 6947307498791208723, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
       propertyPath: movementSpeed
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7021307990560839709, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7337349065773533963, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
       propertyPath: m_TagString

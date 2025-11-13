@@ -796,6 +796,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: AIMover (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 6260648591802589154, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6895880398064232139, guid: 5db8c1e10f8deb745ade3d82154cb2dc, type: 3}
       propertyPath: m_UseGravity
       value: 0
@@ -2329,7 +2333,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1275539689703239667, guid: 50752a287fdb5584aa5d607ac606ba1f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -34.96
+      value: -32.74
       objectReference: {fileID: 0}
     - target: {fileID: 1275539689703239667, guid: 50752a287fdb5584aa5d607ac606ba1f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2397,7 +2401,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7533528059353760663, guid: 50752a287fdb5584aa5d607ac606ba1f, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8241974540188056431, guid: 50752a287fdb5584aa5d607ac606ba1f, type: 3}
       propertyPath: m_LocalPosition.x
